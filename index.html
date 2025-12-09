@@ -211,6 +211,25 @@
             display: none;
         }
 
+        .difficulty-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            z-index: 1;
+        }
+
+        .difficulty-badge.tier-1 { background: #10b981; }
+        .difficulty-badge.tier-2 { background: #3b82f6; }
+        .difficulty-badge.tier-3 { background: #8b5cf6; }
+        .difficulty-badge.tier-4 { background: #f59e0b; }
+        .difficulty-badge.tier-5 { background: #ef4444; }
+        .difficulty-badge.tier-6 { background: #6b7280; }
+
         .country-name {
             font-size: 1.4rem;
             font-weight: 800;
@@ -558,6 +577,7 @@
         <div id="game-area">
             <article id="card" class="card" role="region" aria-label="Flashcard">
                 <div class="flag-container">
+                    <span id="difficulty-badge" class="difficulty-badge tier-1">Easy</span>
                     <div id="flag-placeholder" class="flag-placeholder">🏳️</div>
                     <img id="flag-img" class="flag-img" src="" alt="Country flag to identify">
                 </div>
@@ -645,7 +665,63 @@
 
         let userProgress = { ...DEFAULT_PROGRESS };
 
-        // --- 2. UTILITY FUNCTIONS ---
+        // --- 2. COUNTRY PRIORITY TIERS ---
+        // Tier 1: Most recognizable flags - major world powers, tourist hotspots, distinctive flags
+        const TIER_1_COUNTRIES = new Set([
+            'USA', 'GBR', 'FRA', 'DEU', 'ITA', 'ESP', 'JPN', 'CHN', 'IND', 'BRA',
+            'CAN', 'AUS', 'MEX', 'RUS', 'KOR', 'NLD', 'CHE', 'SWE', 'NOR', 'DNK',
+            'GRC', 'TUR', 'EGY', 'ZAF', 'ARG', 'PRT', 'IRL', 'POL', 'AUT', 'BEL',
+            'NZL', 'SGP', 'ISR', 'SAU', 'ARE', 'THA', 'VNM', 'IDN', 'MYS', 'PHL',
+            'PAK', 'NGA', 'KEN', 'MAR', 'COL', 'PER', 'CHL', 'CUB', 'JAM', 'FIN'
+        ]);
+
+        // Tier 2: Well-known countries - significant population or cultural presence
+        const TIER_2_COUNTRIES = new Set([
+            'UKR', 'CZE', 'HUN', 'ROU', 'BGR', 'HRV', 'SRB', 'SVK', 'SVN', 'LTU',
+            'LVA', 'EST', 'ISL', 'LUX', 'MCO', 'VAT', 'MLT', 'CYP', 'BGD', 'LKA',
+            'NPL', 'MMR', 'KHM', 'LAO', 'TWN', 'HKG', 'MAC', 'MNG', 'PRK', 'IRN',
+            'IRQ', 'SYR', 'JOR', 'LBN', 'QAT', 'KWT', 'OMN', 'BHR', 'YEM', 'AFG',
+            'ETH', 'TZA', 'UGA', 'GHA', 'CIV', 'CMR', 'SEN', 'AGO', 'MOZ', 'ZWE',
+            'TUN', 'DZA', 'LBY', 'SDN', 'VEN', 'ECU', 'BOL', 'PRY', 'URY', 'PAN',
+            'CRI', 'GTM', 'HND', 'SLV', 'NIC', 'DOM', 'HTI', 'PRI', 'TTO', 'BHS'
+        ]);
+
+        function getCountryTier(country) {
+            const code = country.cca3;
+            if (TIER_1_COUNTRIES.has(code)) return 1;
+            if (TIER_2_COUNTRIES.has(code)) return 2;
+            // Tier 3: By population
+            if (country.population > 50000000) return 3;
+            if (country.population > 10000000) return 4;
+            if (country.population > 1000000) return 5;
+            return 6; // Small countries/territories
+        }
+
+        function sortByPriority(countries) {
+            // Group by tier
+            const tiers = {};
+            countries.forEach(country => {
+                const tier = getCountryTier(country);
+                if (!tiers[tier]) tiers[tier] = [];
+                tiers[tier].push(country);
+            });
+
+            // Shuffle within each tier for variety
+            Object.values(tiers).forEach(tierCountries => {
+                shuffleArray(tierCountries);
+            });
+
+            // Combine tiers in order
+            const sorted = [];
+            for (let i = 1; i <= 6; i++) {
+                if (tiers[i]) {
+                    sorted.push(...tiers[i]);
+                }
+            }
+            return sorted;
+        }
+
+        // --- 3. UTILITY FUNCTIONS ---
         function getTodayDateString() {
             return new Date().toISOString().split('T')[0];
         }
@@ -677,7 +753,7 @@
             document.getElementById('progress-container').style.display = 'none';
 
             try {
-                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca3');
+                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca3,population');
                 
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
@@ -685,10 +761,9 @@
                 
                 const data = await res.json();
                 
-                // Filter valid entries and sort alphabetically
+                // Filter valid entries
                 flagsDB = data
-                    .filter(d => d.cca3 && d.flags && d.flags.svg && d.name && d.name.common)
-                    .sort((a, b) => a.name.common.localeCompare(b.name.common));
+                    .filter(d => d.cca3 && d.flags && d.flags.svg && d.name && d.name.common);
                 
                 if (flagsDB.length === 0) {
                     throw new Error('No valid flag data received');
@@ -737,25 +812,47 @@
         }
 
         // --- 5. SPACED REPETITION LOGIC ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
         function prepareSession() {
             const todayTimestamp = getTodayTimestamp();
-            studyQueue = [];
+            
+            // Separate due reviews from new cards
+            const dueReviews = [];
+            const newCards = [];
 
             // Update streak on session start
             updateStreak();
 
-            // Find cards due for review (new cards or due today/past)
+            // Categorize cards
             flagsDB.forEach(flag => {
                 const id = flag.cca3;
                 const progress = userProgress.cards[id];
 
-                if (!progress || progress.nextReview <= todayTimestamp) {
-                    studyQueue.push(flag);
+                if (progress) {
+                    // Previously studied card
+                    if (progress.nextReview <= todayTimestamp) {
+                        dueReviews.push(flag);
+                    }
+                } else {
+                    // New card never studied
+                    newCards.push(flag);
                 }
             });
 
-            // Shuffle for variety
-            shuffleArray(studyQueue);
+            // Sort new cards by priority (famous countries first)
+            const prioritizedNewCards = sortByPriority(newCards);
+            
+            // Shuffle due reviews (user has seen these before)
+            shuffleArray(dueReviews);
+
+            // Combine: due reviews first (urgent), then new cards by priority
+            studyQueue = [...dueReviews, ...prioritizedNewCards];
 
             // Apply session limit if set
             const limit = userProgress.sessionLimit;
@@ -768,13 +865,6 @@
 
             updateProgressBar();
             renderNextCard();
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
         }
 
         function calculateNextReview(rating) {
@@ -852,6 +942,20 @@
             const countryName = document.getElementById('country-name');
             const ratingArea = document.getElementById('rating-area');
             const showBtn = document.getElementById('show-btn');
+            const difficultyBadge = document.getElementById('difficulty-badge');
+
+            // Update difficulty badge
+            const tier = getCountryTier(currentCard);
+            const tierLabels = {
+                1: 'Famous',
+                2: 'Common', 
+                3: 'Notable',
+                4: 'Moderate',
+                5: 'Tricky',
+                6: 'Expert'
+            };
+            difficultyBadge.textContent = tierLabels[tier];
+            difficultyBadge.className = `difficulty-badge tier-${tier}`;
 
             // Show loading state for image
             flagImg.classList.remove('loaded');
