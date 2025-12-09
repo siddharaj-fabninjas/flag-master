@@ -212,15 +212,12 @@
         }
 
         .difficulty-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            padding: 4px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
             font-size: 0.7rem;
             font-weight: 600;
             color: white;
-            z-index: 1;
+            margin-top: 10px;
         }
 
         .difficulty-badge.tier-1 { background: #10b981; }
@@ -577,10 +574,10 @@
         <div id="game-area">
             <article id="card" class="card" role="region" aria-label="Flashcard">
                 <div class="flag-container">
-                    <span id="difficulty-badge" class="difficulty-badge tier-1">Easy</span>
                     <div id="flag-placeholder" class="flag-placeholder">🏳️</div>
                     <img id="flag-img" class="flag-img" src="" alt="Country flag to identify">
                 </div>
+                <span id="difficulty-badge" class="difficulty-badge tier-1">Easy</span>
                 <h2 id="country-name" class="country-name" aria-live="polite">Country Name</h2>
                 
                 <button id="show-btn" class="show-answer-btn" aria-describedby="keyboard-hint">
