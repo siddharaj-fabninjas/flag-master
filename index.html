@@ -864,6 +864,37 @@
             renderNextCard();
         }
 
+        function getRemainingNewCards() {
+            // Count cards that haven't been studied yet
+            return flagsDB.filter(flag => !userProgress.cards[flag.cca3]).length;
+        }
+
+        function startNextSession() {
+            // Get cards that haven't been studied yet (new cards)
+            const newCards = flagsDB.filter(flag => !userProgress.cards[flag.cca3]);
+            
+            if (newCards.length === 0) {
+                return; // No more cards to learn
+            }
+
+            // Sort new cards by priority
+            const prioritizedNewCards = sortByPriority(newCards);
+            
+            // Apply session limit
+            const limit = userProgress.sessionLimit;
+            if (limit > 0 && prioritizedNewCards.length > limit) {
+                studyQueue = prioritizedNewCards.slice(0, limit);
+            } else {
+                studyQueue = prioritizedNewCards;
+            }
+
+            sessionTotal = studyQueue.length;
+            sessionCompleted = 0;
+
+            updateProgressBar();
+            renderNextCard();
+        }
+
         function calculateNextReview(rating) {
             let interval = 1;
 
@@ -916,13 +947,28 @@
                 msgArea.style.display = 'block';
                 
                 const masteredCount = Object.values(userProgress.cards).filter(c => c.interval >= 7).length;
+                const remainingCards = getRemainingNewCards();
+                
+                let continueMessage = '';
+                if (remainingCards > 0) {
+                    continueMessage = `
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                            <span style="color: var(--text-muted);">${remainingCards} more flags available to learn</span><br><br>
+                            <button onclick="startNextSession()" class="show-answer-btn">
+                                Continue Learning
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    continueMessage = `<br>Come back tomorrow to review!`;
+                }
                 
                 msgArea.innerHTML = `
                     <div style="font-size: 3rem; margin-bottom: 15px;">🎉</div>
                     <strong>Session Complete!</strong><br><br>
                     You reviewed <strong>${sessionCompleted}</strong> flags today.<br>
-                    <span style="color: var(--primary);">${masteredCount} flags mastered overall!</span><br><br>
-                    Come back tomorrow to continue learning!
+                    <span style="color: var(--primary);">${masteredCount} flags mastered overall!</span>
+                    ${continueMessage}
                 `;
                 return;
             }
