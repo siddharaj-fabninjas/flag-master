@@ -479,6 +479,84 @@
             background: #dc2626;
         }
 
+        .secondary-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .secondary-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .advanced-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+        }
+
+        .advanced-toggle {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding: 8px 0;
+            user-select: none;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .advanced-toggle::-webkit-details-marker {
+            display: none;
+        }
+
+        .advanced-toggle::after {
+            content: '▸';
+            transition: transform 0.2s;
+        }
+
+        details[open] .advanced-toggle::after {
+            transform: rotate(90deg);
+        }
+
+        .advanced-toggle:hover {
+            color: var(--text);
+        }
+
+        .advanced-content {
+            margin-top: 15px;
+        }
+
+        .import-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .import-status.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .import-status.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
         /* Keyboard Shortcuts Hint */
         .keyboard-hint {
             margin-top: 15px;
@@ -641,6 +719,25 @@
                 <p class="setting-description">This will clear all your learning progress and stats.</p>
                 <button id="reset-btn" class="danger-btn">Reset All Progress</button>
             </div>
+
+            <details class="advanced-section">
+                <summary class="advanced-toggle">🔧 Advanced Options</summary>
+                <div class="advanced-content">
+                    <div class="setting-group">
+                        <label class="setting-label">Export Data</label>
+                        <p class="setting-description">Download all your progress as a JSON file for backup.</p>
+                        <button id="export-btn" class="secondary-btn">📥 Export Data</button>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Import Data</label>
+                        <p class="setting-description">Restore progress from a previously exported JSON file.</p>
+                        <input type="file" id="import-file" accept=".json" style="display: none;">
+                        <button id="import-btn" class="secondary-btn">📤 Import Data</button>
+                        <div id="import-status" class="import-status"></div>
+                    </div>
+                </div>
+            </details>
         </div>
     </div>
 
@@ -1119,6 +1216,110 @@
             }
         }
 
+        // --- IMPORT/EXPORT FUNCTIONS ---
+        function exportData() {
+            const exportData = {
+                version: 1,
+                exportDate: new Date().toISOString(),
+                theme: localStorage.getItem('flagMasterTheme') || 'light',
+                progress: userProgress
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `flagmaster-backup-${getTodayDateString()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(file) {
+            const statusEl = document.getElementById('import-status');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // Validate the data structure
+                    if (!data.progress || typeof data.progress !== 'object') {
+                        throw new Error('Invalid data format: missing progress data');
+                    }
+
+                    // Validate required fields in progress
+                    const requiredFields = ['xp', 'streak', 'cards'];
+                    for (const field of requiredFields) {
+                        if (!(field in data.progress)) {
+                            throw new Error(`Invalid data format: missing ${field} field`);
+                        }
+                    }
+
+                    // Validate cards structure
+                    if (typeof data.progress.cards !== 'object') {
+                        throw new Error('Invalid data format: cards must be an object');
+                    }
+
+                    // Confirm import
+                    const cardCount = Object.keys(data.progress.cards).length;
+                    const confirmMsg = `This will replace your current progress with:\n• ${data.progress.xp.toLocaleString()} XP\n• ${data.progress.streak} day streak\n• ${cardCount} studied cards\n\nContinue?`;
+                    
+                    if (!confirm(confirmMsg)) {
+                        statusEl.className = 'import-status';
+                        statusEl.textContent = '';
+                        return;
+                    }
+
+                    // Import progress
+                    userProgress = { ...DEFAULT_PROGRESS, ...data.progress };
+                    saveProgress();
+
+                    // Import theme if present
+                    if (data.theme) {
+                        localStorage.setItem('flagMasterTheme', data.theme);
+                        if (data.theme === 'dark') {
+                            document.documentElement.setAttribute('data-theme', 'dark');
+                            document.getElementById('theme-toggle').textContent = '☀️';
+                        } else {
+                            document.documentElement.removeAttribute('data-theme');
+                            document.getElementById('theme-toggle').textContent = '🌙';
+                        }
+                    }
+
+                    // Update UI
+                    statusEl.className = 'import-status success';
+                    statusEl.textContent = `✓ Successfully imported ${cardCount} cards, ${data.progress.xp.toLocaleString()} XP`;
+                    
+                    // Update settings display
+                    document.getElementById('stat-total-studied').textContent = cardCount;
+                    const mastered = Object.values(userProgress.cards).filter(c => c.interval >= 7).length;
+                    document.getElementById('stat-mastered').textContent = mastered;
+                    document.getElementById('session-limit').value = userProgress.sessionLimit || 20;
+                    
+                    updateHUD();
+                    
+                    // Refresh session with new data
+                    prepareSession();
+
+                } catch (error) {
+                    console.error('Import error:', error);
+                    statusEl.className = 'import-status error';
+                    statusEl.textContent = `✗ Import failed: ${error.message}`;
+                }
+            };
+
+            reader.onerror = function() {
+                statusEl.className = 'import-status error';
+                statusEl.textContent = '✗ Failed to read file';
+            };
+
+            reader.readAsText(file);
+        }
+
         function updateHUD() {
             document.getElementById('xp').textContent = userProgress.xp.toLocaleString();
             document.getElementById('due-count').textContent = studyQueue.length;
@@ -1171,6 +1372,10 @@
 
         function closeModal() {
             document.getElementById('settings-modal').classList.remove('visible');
+            // Clear import status message
+            const statusEl = document.getElementById('import-status');
+            statusEl.className = 'import-status';
+            statusEl.textContent = '';
         }
 
         function saveSessionLimit() {
@@ -1190,6 +1395,18 @@
         document.getElementById('close-modal').addEventListener('click', closeModal);
         document.getElementById('reset-btn').addEventListener('click', resetProgress);
         document.getElementById('session-limit').addEventListener('change', saveSessionLimit);
+        
+        // Import/Export listeners
+        document.getElementById('export-btn').addEventListener('click', exportData);
+        document.getElementById('import-btn').addEventListener('click', () => {
+            document.getElementById('import-file').click();
+        });
+        document.getElementById('import-file').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importData(e.target.files[0]);
+                e.target.value = ''; // Reset so same file can be selected again
+            }
+        });
 
         // Rating button event delegation
         document.getElementById('rating-area').addEventListener('click', (e) => {
