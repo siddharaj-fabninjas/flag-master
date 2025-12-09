@@ -7,9 +7,28 @@
     <style>
         :root {
             --primary: #4f46e5;
+            --primary-hover: #4338ca;
             --bg: #f3f4f6;
             --card-bg: #ffffff;
             --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary: #818cf8;
+            --primary-hover: #a5b4fc;
+            --bg: #111827;
+            --card-bg: #1f2937;
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -22,19 +41,109 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Header with Settings */
+        .header {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.1);
+            background: var(--border);
+        }
+
+        .icon-btn:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
 
         /* HUD & Stats */
         .hud {
             display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 20px;
             background: var(--card-bg);
-            padding: 15px 30px;
+            padding: 12px 20px;
             border-radius: 50px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px var(--shadow);
+            flex-wrap: wrap;
+            justify-content: center;
         }
-        .stat { font-weight: bold; color: var(--primary); }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .stat { 
+            font-weight: bold; 
+            color: var(--primary); 
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #10b981);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
 
         /* Game Container */
         .game-container {
@@ -47,177 +156,632 @@
         .card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 40px 20px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            min-height: 300px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+            min-height: 280px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -5px var(--shadow);
         }
         
-        .flag-img {
+        .flag-container {
+            position: relative;
             width: 200px;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 133px;
             margin-bottom: 20px;
         }
 
+        .flag-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .flag-img.loaded {
+            opacity: 1;
+        }
+
+        .flag-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 2rem;
+        }
+
+        .flag-placeholder.hidden {
+            display: none;
+        }
+
         .country-name {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 800;
-            margin-top: 20px;
-            display: none; /* Hidden initially */
+            margin: 15px 0;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .country-name.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .show-answer-btn {
-            margin-top: 30px;
-            padding: 12px 24px;
+            margin-top: 20px;
+            padding: 14px 28px;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .show-answer-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.02);
+        }
+
+        .show-answer-btn:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .show-answer-btn.hidden {
+            display: none;
         }
 
         /* Rating Buttons */
         .rating-area {
-            display: none; /* Hidden initially */
-            gap: 10px;
+            display: none;
+            gap: 8px;
             margin-top: 20px;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
+        }
+
+        .rating-area.visible {
+            display: flex;
         }
 
         .rate-btn {
-            padding: 10px 20px;
+            padding: 12px 8px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
             color: white;
             flex: 1;
-            min-width: 80px;
+            min-width: 70px;
+            max-width: 90px;
+            transition: transform 0.2s, filter 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
         }
 
-        .btn-again { background-color: #ef4444; } /* Red */
-        .btn-hard { background-color: #f59e0b; } /* Orange */
-        .btn-good { background-color: #10b981; } /* Green */
-        .btn-easy { background-color: #3b82f6; } /* Blue */
+        .rate-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .rate-btn:focus {
+            outline: 2px solid white;
+            outline-offset: 2px;
+        }
+
+        .rate-btn .interval {
+            font-size: 0.75rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .btn-again { background-color: #ef4444; }
+        .btn-hard { background-color: #f59e0b; }
+        .btn-good { background-color: #10b981; }
+        .btn-easy { background-color: #3b82f6; }
 
         /* Loading & Empty States */
         .loader, .finished-msg {
-            font-size: 1.2rem;
-            color: #6b7280;
-            margin-top: 50px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-top: 40px;
+            text-align: center;
+            line-height: 1.6;
         }
 
+        .finished-msg {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Settings Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 5px;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .setting-description {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .setting-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .setting-input:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 1px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-card-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .danger-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .danger-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Keyboard Shortcuts Hint */
+        .keyboard-hint {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .key {
+            display: inline-block;
+            background: var(--border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 0 2px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .hud {
+                padding: 10px 15px;
+                gap: 10px;
+            }
+
+            .hud-item {
+                font-size: 0.85rem;
+            }
+
+            .card {
+                padding: 20px 15px;
+                min-height: 250px;
+            }
+
+            .flag-container {
+                width: 160px;
+                height: 107px;
+            }
+
+            .country-name {
+                font-size: 1.2rem;
+            }
+
+            .rate-btn {
+                padding: 10px 6px;
+                min-width: 60px;
+                font-size: 0.9rem;
+            }
+
+            .rate-btn .interval {
+                font-size: 0.7rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Header -->
+    <header class="header">
+        <h1 class="app-title">🏴 FlagMaster</h1>
+        <div class="header-controls">
+            <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark mode" title="Toggle theme (T)">🌙</button>
+            <button id="settings-btn" class="icon-btn" aria-label="Open settings" title="Settings (S)">⚙️</button>
+        </div>
+    </header>
 
-    <div class="hud">
-        <span>🔥 Streak: <span id="streak" class="stat">0</span></span>
-        <span>XP: <span id="xp" class="stat">0</span></span>
-        <span>Due: <span id="due-count" class="stat">0</span></span>
+    <!-- HUD Stats -->
+    <div class="hud" role="status" aria-live="polite">
+        <span class="hud-item">🔥 Streak: <span id="streak" class="stat">0</span></span>
+        <span class="hud-item">⭐ XP: <span id="xp" class="stat">0</span></span>
+        <span class="hud-item">📚 Due: <span id="due-count" class="stat">0</span></span>
     </div>
 
-    <div class="game-container">
-        <div id="game-area">
-            <div id="card" class="card">
-                <img id="flag-img" class="flag-img" src="" alt="Flag">
-                <h2 id="country-name" class="country-name">Country Name</h2>
-                
-                <button id="show-btn" class="show-answer-btn">Show Answer</button>
+    <!-- Progress Bar -->
+    <div class="progress-container" id="progress-container">
+        <div class="progress-text">
+            <span id="progress-label">Session Progress</span>
+            <span id="progress-count">0/0</span>
+        </div>
+        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
 
-                <div id="rating-area" class="rating-area">
-                    <button class="rate-btn btn-again" onclick="rateCard('again')">Again (1m)</button>
-                    <button class="rate-btn btn-hard" onclick="rateCard('hard')">Hard (1d)</button>
-                    <button class="rate-btn btn-good" onclick="rateCard('good')">Good (3d)</button>
-                    <button class="rate-btn btn-easy" onclick="rateCard('easy')">Easy (7d)</button>
+    <!-- Game Area -->
+    <main class="game-container">
+        <div id="game-area">
+            <article id="card" class="card" role="region" aria-label="Flashcard">
+                <div class="flag-container">
+                    <div id="flag-placeholder" class="flag-placeholder">🏳️</div>
+                    <img id="flag-img" class="flag-img" src="" alt="Country flag to identify">
+                </div>
+                <h2 id="country-name" class="country-name" aria-live="polite">Country Name</h2>
+                
+                <button id="show-btn" class="show-answer-btn" aria-describedby="keyboard-hint">
+                    Show Answer
+                </button>
+
+                <div id="rating-area" class="rating-area" role="group" aria-label="Rate your recall">
+                    <button class="rate-btn btn-again" data-rating="again" aria-label="Again - review in 1 minute">
+                        Again
+                        <span class="interval" id="interval-again">1m</span>
+                    </button>
+                    <button class="rate-btn btn-hard" data-rating="hard" aria-label="Hard - review later">
+                        Hard
+                        <span class="interval" id="interval-hard">1d</span>
+                    </button>
+                    <button class="rate-btn btn-good" data-rating="good" aria-label="Good - review in a few days">
+                        Good
+                        <span class="interval" id="interval-good">3d</span>
+                    </button>
+                    <button class="rate-btn btn-easy" data-rating="easy" aria-label="Easy - review in a week">
+                        Easy
+                        <span class="interval" id="interval-easy">7d</span>
+                    </button>
+                </div>
+
+                <p class="keyboard-hint" id="keyboard-hint">
+                    <span class="key">Space</span> show · <span class="key">1-4</span> rate
+                </p>
+            </article>
+        </div>
+        <div id="message-area" class="finished-msg" style="display: none;" role="status" aria-live="polite"></div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">⚙️ Settings</h2>
+                <button id="close-modal" class="close-btn" aria-label="Close settings">&times;</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-total-studied">0</div>
+                    <div class="stat-card-label">Cards Studied</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-mastered">0</div>
+                    <div class="stat-card-label">Mastered (7d+)</div>
                 </div>
             </div>
+
+            <div class="setting-group">
+                <label class="setting-label" for="session-limit">Cards Per Session</label>
+                <p class="setting-description">Limit how many new cards to study per session (0 = unlimited)</p>
+                <input type="number" id="session-limit" class="setting-input" min="0" max="100" value="20">
+            </div>
+
+            <div class="setting-group">
+                <label class="setting-label">Reset Progress</label>
+                <p class="setting-description">This will clear all your learning progress and stats.</p>
+                <button id="reset-btn" class="danger-btn">Reset All Progress</button>
+            </div>
         </div>
-        <div id="message-area" class="finished-msg" style="display: none;"></div>
     </div>
 
     <script>
         // --- 1. GAME STATE & DATA ---
-        let flagsDB = []; // All flag data
-        let studyQueue = []; // Cards due for review today
+        let flagsDB = [];
+        let studyQueue = [];
         let currentCard = null;
-        let userProgress = {
+        let sessionTotal = 0;
+        let sessionCompleted = 0;
+
+        const DEFAULT_PROGRESS = {
             xp: 0,
             streak: 0,
-            lastLogin: null,
-            cards: {} // Key: CountryCode, Value: { interval, nextReview, easeFactor }
+            lastLoginDate: null,
+            sessionLimit: 20,
+            cards: {}
         };
 
-        // --- 2. INITIALIZATION ---
+        let userProgress = { ...DEFAULT_PROGRESS };
+
+        // --- 2. UTILITY FUNCTIONS ---
+        function getTodayDateString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function getTodayTimestamp() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return today.getTime();
+        }
+
+        function formatInterval(days) {
+            if (days === 0) return '1m';
+            if (days === 1) return '1d';
+            if (days < 7) return `${days}d`;
+            if (days < 30) return `${Math.round(days / 7)}w`;
+            return `${Math.round(days / 30)}mo`;
+        }
+
+        // --- 3. INITIALIZATION ---
         async function initGame() {
             loadProgress();
+            loadSettings();
             updateHUD();
             
             const messageArea = document.getElementById('message-area');
-            messageArea.innerText = "Loading flags...";
-            messageArea.style.display = "block";
-            document.getElementById('game-area').style.display = "none";
+            messageArea.innerHTML = '<div class="spinner"></div>Loading flags from around the world...';
+            messageArea.style.display = 'block';
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'none';
 
             try {
-                // Fetch Data from REST Countries API
                 const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca3');
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                
                 const data = await res.json();
                 
-                // Filter only valid entries
-                flagsDB = data.filter(d => d.cca3 && d.flags && d.flags.svg);
+                // Filter valid entries and sort alphabetically
+                flagsDB = data
+                    .filter(d => d.cca3 && d.flags && d.flags.svg && d.name && d.name.common)
+                    .sort((a, b) => a.name.common.localeCompare(b.name.common));
+                
+                if (flagsDB.length === 0) {
+                    throw new Error('No valid flag data received');
+                }
                 
                 prepareSession();
             } catch (error) {
-                console.error(error);
-                messageArea.innerText = "Error loading data. Please refresh.";
+                console.error('Failed to load flags:', error);
+                messageArea.innerHTML = `
+                    <div style="font-size: 2rem; margin-bottom: 10px;">😕</div>
+                    <strong>Error loading data</strong><br>
+                    <span style="font-size: 0.9rem;">${error.message}</span><br><br>
+                    <button onclick="location.reload()" class="show-answer-btn">Try Again</button>
+                `;
             }
         }
 
-        // --- 3. SPACED REPETITION LOGIC ---
+        // --- 4. STREAK LOGIC ---
+        function updateStreak() {
+            const today = getTodayDateString();
+            const lastLogin = userProgress.lastLoginDate;
+            
+            if (!lastLogin) {
+                // First time user
+                userProgress.streak = 1;
+            } else if (lastLogin === today) {
+                // Already logged in today, streak unchanged
+                return;
+            } else {
+                // Check if yesterday
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                
+                if (lastLogin === yesterdayStr) {
+                    // Consecutive day - increment streak
+                    userProgress.streak += 1;
+                } else {
+                    // Streak broken - reset to 1
+                    userProgress.streak = 1;
+                }
+            }
+            
+            userProgress.lastLoginDate = today;
+            saveProgress();
+        }
+
+        // --- 5. SPACED REPETITION LOGIC ---
         function prepareSession() {
-            const today = new Date().setHours(0,0,0,0);
+            const todayTimestamp = getTodayTimestamp();
             studyQueue = [];
 
-            // check streak
-            if (userProgress.lastLogin !== today) {
-                // Logic to increment or reset streak would go here
-                userProgress.lastLogin = today;
-                saveProgress();
-            }
+            // Update streak on session start
+            updateStreak();
 
-            // 1. Find cards due for review
+            // Find cards due for review (new cards or due today/past)
             flagsDB.forEach(flag => {
                 const id = flag.cca3;
                 const progress = userProgress.cards[id];
 
-                // If never studied (New) OR due date is today/past
-                if (!progress || progress.nextReview <= today) {
+                if (!progress || progress.nextReview <= todayTimestamp) {
                     studyQueue.push(flag);
                 }
             });
 
-            // Limit session to 20 cards to prevent burnout (optional)
-            // studyQueue = studyQueue.slice(0, 20); 
+            // Shuffle for variety
+            shuffleArray(studyQueue);
 
+            // Apply session limit if set
+            const limit = userProgress.sessionLimit;
+            if (limit > 0 && studyQueue.length > limit) {
+                studyQueue = studyQueue.slice(0, limit);
+            }
+
+            sessionTotal = studyQueue.length;
+            sessionCompleted = 0;
+
+            updateProgressBar();
             renderNextCard();
         }
 
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
         function calculateNextReview(rating) {
-            // Simplified SM-2 / Leitner Logic
-            // Rating: 'again' (fail), 'hard', 'good', 'easy'
-            let interval = 1; // days
+            let interval = 1;
 
             if (rating === 'again') {
-                interval = 0; // Review again today
+                interval = 0;
             } else if (rating === 'hard') {
                 interval = 1;
             } else if (rating === 'good') {
@@ -226,83 +790,161 @@
                 interval = 7;
             }
 
-            // Logic for existing cards (extending intervals)
+            // Extend intervals for cards already studied
             if (currentCard && userProgress.cards[currentCard.cca3] && rating !== 'again') {
                 const currentInterval = userProgress.cards[currentCard.cca3].interval || 1;
                 if (rating === 'easy') interval = Math.round(currentInterval * 2.5);
-                if (rating === 'good') interval = Math.round(currentInterval * 1.5);
-                if (rating === 'hard') interval = Math.round(currentInterval * 1.2);
+                else if (rating === 'good') interval = Math.round(currentInterval * 1.8);
+                else if (rating === 'hard') interval = Math.round(currentInterval * 1.2);
+                
+                // Cap at reasonable maximum (6 months)
+                interval = Math.min(interval, 180);
             }
 
             return interval;
         }
 
-        // --- 4. UI INTERACTIONS ---
+        function updateIntervalLabels() {
+            if (!currentCard) return;
+
+            const ratings = ['again', 'hard', 'good', 'easy'];
+            ratings.forEach(rating => {
+                const interval = calculateNextReview(rating);
+                const label = document.getElementById(`interval-${rating}`);
+                if (label) {
+                    label.textContent = formatInterval(interval);
+                }
+            });
+        }
+
+        // --- 6. UI RENDERING ---
         function renderNextCard() {
             const gameArea = document.getElementById('game-area');
             const msgArea = document.getElementById('message-area');
+            const progressContainer = document.getElementById('progress-container');
 
             if (studyQueue.length === 0) {
-                gameArea.style.display = "none";
-                msgArea.style.display = "block";
-                msgArea.innerHTML = "🎉 <b>Session Complete!</b><br>You have reviewed all due flags for today.<br>Come back tomorrow!";
+                gameArea.style.display = 'none';
+                progressContainer.style.display = 'none';
+                msgArea.style.display = 'block';
+                
+                const masteredCount = Object.values(userProgress.cards).filter(c => c.interval >= 7).length;
+                
+                msgArea.innerHTML = `
+                    <div style="font-size: 3rem; margin-bottom: 15px;">🎉</div>
+                    <strong>Session Complete!</strong><br><br>
+                    You reviewed <strong>${sessionCompleted}</strong> flags today.<br>
+                    <span style="color: var(--primary);">${masteredCount} flags mastered overall!</span><br><br>
+                    Come back tomorrow to continue learning!
+                `;
                 return;
             }
 
-            gameArea.style.display = "block";
-            msgArea.style.display = "none";
+            gameArea.style.display = 'block';
+            progressContainer.style.display = 'block';
+            msgArea.style.display = 'none';
 
-            // Pop next card
             currentCard = studyQueue[0];
             
-            // Reset UI
-            document.getElementById('flag-img').src = currentCard.flags.svg;
-            document.getElementById('country-name').innerText = currentCard.name.common;
-            document.getElementById('country-name').style.display = 'none';
-            document.getElementById('rating-area').style.display = 'none';
-            document.getElementById('show-btn').style.display = 'inline-block';
+            // Reset UI state
+            const flagImg = document.getElementById('flag-img');
+            const placeholder = document.getElementById('flag-placeholder');
+            const countryName = document.getElementById('country-name');
+            const ratingArea = document.getElementById('rating-area');
+            const showBtn = document.getElementById('show-btn');
+
+            // Show loading state for image
+            flagImg.classList.remove('loaded');
+            placeholder.classList.remove('hidden');
             
+            // Set image with error handling
+            flagImg.onload = () => {
+                flagImg.classList.add('loaded');
+                placeholder.classList.add('hidden');
+            };
+            flagImg.onerror = () => {
+                placeholder.textContent = '🏳️';
+                placeholder.classList.remove('hidden');
+                flagImg.classList.remove('loaded');
+            };
+            
+            flagImg.src = currentCard.flags.svg;
+            flagImg.alt = `Flag of ${currentCard.name.common} - try to identify this country`;
+            
+            countryName.textContent = currentCard.name.common;
+            countryName.classList.remove('visible');
+            ratingArea.classList.remove('visible');
+            showBtn.classList.remove('hidden');
+            
+            updateIntervalLabels();
             updateHUD();
         }
 
-        document.getElementById('show-btn').addEventListener('click', () => {
-            document.getElementById('country-name').style.display = 'block';
-            document.getElementById('rating-area').style.display = 'flex';
-            document.getElementById('show-btn').style.display = 'none';
-        });
+        function showAnswer() {
+            document.getElementById('country-name').classList.add('visible');
+            document.getElementById('rating-area').classList.add('visible');
+            document.getElementById('show-btn').classList.add('hidden');
+            
+            // Focus first rating button for keyboard navigation
+            document.querySelector('.rate-btn').focus();
+        }
 
         function rateCard(rating) {
             const id = currentCard.cca3;
             const interval = calculateNextReview(rating);
             
-            // Calculate next date (ms)
             const nextDate = new Date();
             nextDate.setDate(nextDate.getDate() + interval);
-            nextDate.setHours(0,0,0,0);
+            nextDate.setHours(0, 0, 0, 0);
 
-            // Update User Progress
             userProgress.cards[id] = {
                 interval: interval,
-                nextReview: nextDate.getTime()
+                nextReview: nextDate.getTime(),
+                lastReviewed: Date.now()
             };
 
-            // XP Reward
-            if (rating !== 'again') userProgress.xp += 10;
+            // XP reward (bonus for streaks)
+            if (rating !== 'again') {
+                let xpGain = 10;
+                if (rating === 'easy') xpGain = 20;
+                else if (rating === 'good') xpGain = 15;
+                userProgress.xp += xpGain;
+            }
             
             saveProgress();
             
-            // Remove from queue if not 'again'
+            // Handle queue
             if (rating !== 'again') {
                 studyQueue.shift();
+                sessionCompleted++;
             } else {
-                // Move to end of queue to review again this session
+                // Move to end of queue for retry
                 studyQueue.push(studyQueue.shift());
             }
 
+            updateProgressBar();
             renderNextCard();
         }
 
-        // --- 5. PERSISTENCE (Local Storage) ---
+        function updateProgressBar() {
+            const fill = document.getElementById('progress-fill');
+            const count = document.getElementById('progress-count');
+            const container = document.getElementById('progress-container');
+            
+            if (sessionTotal === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            const percent = Math.round((sessionCompleted / sessionTotal) * 100);
+            fill.style.width = `${percent}%`;
+            count.textContent = `${sessionCompleted}/${sessionTotal}`;
+            
+            // Update aria for accessibility
+            fill.parentElement.setAttribute('aria-valuenow', percent);
+        }
+
+        // --- 7. PERSISTENCE ---
         function saveProgress() {
             localStorage.setItem('flagMasterProgress', JSON.stringify(userProgress));
             updateHUD();
@@ -311,20 +953,163 @@
         function loadProgress() {
             const saved = localStorage.getItem('flagMasterProgress');
             if (saved) {
-                userProgress = JSON.parse(saved);
+                try {
+                    const parsed = JSON.parse(saved);
+                    userProgress = { ...DEFAULT_PROGRESS, ...parsed };
+                } catch (e) {
+                    console.error('Failed to parse saved progress:', e);
+                    userProgress = { ...DEFAULT_PROGRESS };
+                }
+            }
+        }
+
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all your progress? This cannot be undone!')) {
+                userProgress = { ...DEFAULT_PROGRESS };
+                localStorage.removeItem('flagMasterProgress');
+                closeModal();
+                prepareSession();
             }
         }
 
         function updateHUD() {
-            document.getElementById('xp').innerText = userProgress.xp;
-            document.getElementById('due-count').innerText = studyQueue.length;
-            // Streak logic would need refined date checking, simplified here
-            document.getElementById('streak').innerText = userProgress.streak; 
+            document.getElementById('xp').textContent = userProgress.xp.toLocaleString();
+            document.getElementById('due-count').textContent = studyQueue.length;
+            document.getElementById('streak').textContent = userProgress.streak;
         }
 
-        // Start
-        initGame();
+        // --- 8. SETTINGS & THEME ---
+        function loadSettings() {
+            // Load theme
+            const savedTheme = localStorage.getItem('flagMasterTheme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('theme-toggle').textContent = '☀️';
+            }
+            
+            // Load session limit
+            document.getElementById('session-limit').value = userProgress.sessionLimit || 20;
+        }
 
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeBtn = document.getElementById('theme-toggle');
+            
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
+                themeBtn.textContent = '🌙';
+                localStorage.setItem('flagMasterTheme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                themeBtn.textContent = '☀️';
+                localStorage.setItem('flagMasterTheme', 'dark');
+            }
+        }
+
+        function openModal() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.add('visible');
+            
+            // Update stats
+            const totalStudied = Object.keys(userProgress.cards).length;
+            const mastered = Object.values(userProgress.cards).filter(c => c.interval >= 7).length;
+            
+            document.getElementById('stat-total-studied').textContent = totalStudied;
+            document.getElementById('stat-mastered').textContent = mastered;
+            document.getElementById('session-limit').value = userProgress.sessionLimit || 20;
+            
+            // Trap focus in modal
+            document.getElementById('close-modal').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('settings-modal').classList.remove('visible');
+        }
+
+        function saveSessionLimit() {
+            const input = document.getElementById('session-limit');
+            const value = parseInt(input.value, 10);
+            
+            if (!isNaN(value) && value >= 0) {
+                userProgress.sessionLimit = value;
+                saveProgress();
+            }
+        }
+
+        // --- 9. EVENT LISTENERS ---
+        document.getElementById('show-btn').addEventListener('click', showAnswer);
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        document.getElementById('settings-btn').addEventListener('click', openModal);
+        document.getElementById('close-modal').addEventListener('click', closeModal);
+        document.getElementById('reset-btn').addEventListener('click', resetProgress);
+        document.getElementById('session-limit').addEventListener('change', saveSessionLimit);
+
+        // Rating button event delegation
+        document.getElementById('rating-area').addEventListener('click', (e) => {
+            const btn = e.target.closest('.rate-btn');
+            if (btn) {
+                rateCard(btn.dataset.rating);
+            }
+        });
+
+        // Modal close on overlay click
+        document.getElementById('settings-modal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ignore if typing in input
+            if (e.target.tagName === 'INPUT') return;
+            
+            const modal = document.getElementById('settings-modal');
+            
+            // Close modal with Escape
+            if (e.key === 'Escape' && modal.classList.contains('visible')) {
+                closeModal();
+                return;
+            }
+            
+            // Don't process game shortcuts if modal is open
+            if (modal.classList.contains('visible')) return;
+            
+            const showBtn = document.getElementById('show-btn');
+            const ratingArea = document.getElementById('rating-area');
+            
+            // Show answer with Space
+            if (e.key === ' ' && !showBtn.classList.contains('hidden')) {
+                e.preventDefault();
+                showAnswer();
+                return;
+            }
+            
+            // Rate with number keys
+            if (ratingArea.classList.contains('visible')) {
+                const ratingMap = { '1': 'again', '2': 'hard', '3': 'good', '4': 'easy' };
+                if (ratingMap[e.key]) {
+                    e.preventDefault();
+                    rateCard(ratingMap[e.key]);
+                    return;
+                }
+            }
+            
+            // Theme toggle with T
+            if (e.key.toLowerCase() === 't') {
+                toggleTheme();
+                return;
+            }
+            
+            // Settings with S
+            if (e.key.toLowerCase() === 's') {
+                openModal();
+                return;
+            }
+        });
+
+        // Start the game
+        initGame();
     </script>
 </body>
 </html>
