@@ -51,9 +51,24 @@ Click the ⚙️ icon to access:
 - Progress stored in browser's localStorage
 - Intervals calculated dynamically based on card history
 
-## Algorithm
+## Learning Priority System
 
-The app uses a simplified spaced repetition algorithm:
+New cards are introduced using a smart priority system that starts with well-known countries:
+
+| Tier | Label | Description |
+|------|-------|-------------|
+| 1 | Famous | Major world powers, top tourist destinations (USA, UK, Japan, etc.) |
+| 2 | Common | Culturally significant countries (Ukraine, Czech Republic, Taiwan, etc.) |
+| 3 | Notable | High population (50M+) countries |
+| 4 | Moderate | Medium population (10-50M) countries |
+| 5 | Tricky | Smaller countries (1-10M population) |
+| 6 | Expert | Micro-nations and territories |
+
+This ensures beginners start with recognizable flags and gradually progress to more challenging ones.
+
+## Spaced Repetition Algorithm
+
+The app uses a simplified SM-2 algorithm:
 - **New cards**: Start with base intervals (1 day for Hard, 3 days for Good, 7 days for Easy)
 - **Review cards**: Intervals multiply based on rating:
   - Easy: 2.5x current interval
