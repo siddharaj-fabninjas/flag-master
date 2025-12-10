@@ -264,22 +264,17 @@
             color: var(--primary);
         }
 
-        /* Flag container overlay indicators */
+        /* Flag indicators row above the flag */
         .flag-indicators {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 10;
-            pointer-events: none;
+            margin-bottom: 8px;
         }
 
         .flag-indicator-icon {
-            font-size: 1.2rem;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+            font-size: 1.1rem;
         }
 
         .flag-indicator-dots {
@@ -295,14 +290,12 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            border: 1px solid rgba(0,0,0,0.2);
+            background: var(--border);
             transition: background-color 0.3s, transform 0.3s;
         }
 
         .flag-indicator-dots .dot.filled {
             background: #10b981;
-            border-color: #059669;
             transform: scale(1.1);
         }
 
@@ -866,15 +859,15 @@
         <div id="game-area">
             <article id="card" class="card" role="region" aria-label="Flashcard">
                 <span id="card-state-badge" class="card-state-badge learning" style="display:none;">Learning</span>
-                <div class="flag-container">
-                    <div class="flag-indicators">
-                        <span id="flag-indicator-icon" class="flag-indicator-icon">🎯</span>
-                        <div id="flag-indicator-dots" class="flag-indicator-dots">
-                            <span class="dot" id="indicator-dot-1"></span>
-                            <span class="dot" id="indicator-dot-2"></span>
-                            <span class="dot" id="indicator-dot-3"></span>
-                        </div>
+                <div class="flag-indicators">
+                    <span id="flag-indicator-icon" class="flag-indicator-icon">🎯</span>
+                    <div id="flag-indicator-dots" class="flag-indicator-dots">
+                        <span class="dot" id="indicator-dot-1"></span>
+                        <span class="dot" id="indicator-dot-2"></span>
+                        <span class="dot" id="indicator-dot-3"></span>
                     </div>
+                </div>
+                <div class="flag-container">
                     <div id="flag-placeholder" class="flag-placeholder">🏳️</div>
                     <img id="flag-img" class="flag-img" src="" alt="Country flag to identify">
                 </div>
