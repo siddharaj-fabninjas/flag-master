@@ -435,6 +435,114 @@
             color: var(--text-muted);
         }
 
+        /* World Map Location Section */
+        .map-section {
+            width: 100%;
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 12px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            display: none;
+        }
+
+        .map-section.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .map-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2 / 1;
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .world-map-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .world-map-svg .land {
+            fill: var(--border);
+            stroke: var(--bg);
+            stroke-width: 0.5;
+            transition: fill 0.3s ease;
+        }
+
+        .world-map-svg .land.highlighted {
+            fill: var(--primary);
+            stroke: var(--primary-hover);
+            stroke-width: 1;
+        }
+
+        .world-map-svg .ocean {
+            fill: var(--card-bg);
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+            animation: pulse-marker 2s infinite;
+            z-index: 10;
+        }
+
+        .map-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+
+        @keyframes pulse-marker {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        .map-region-label {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .map-region-label strong {
+            color: var(--text);
+        }
+
         .country-name {
             font-size: 1.4rem;
             font-weight: 800;
@@ -930,6 +1038,48 @@
                             <div id="similar-flags-list"></div>
                         </div>
                     </div>
+                </div>
+
+                <!-- World Map Location Section -->
+                <div id="map-section" class="map-section">
+                    <div class="map-header">
+                        <span>🗺️</span> Location on World Map
+                    </div>
+                    <div class="map-container">
+                        <svg class="world-map-svg" viewBox="0 0 360 180" preserveAspectRatio="xMidYMid meet">
+                            <!-- Ocean background -->
+                            <rect class="ocean" x="0" y="0" width="360" height="180"/>
+                            <!-- Simplified world map paths -->
+                            <g class="continents">
+                                <!-- North America -->
+                                <path class="land" data-region="North America" d="M10,20 L60,15 L90,20 L120,35 L130,50 L125,70 L100,75 L80,90 L60,85 L40,70 L20,55 L10,40 Z"/>
+                                <!-- Central America & Caribbean -->
+                                <path class="land" data-region="Central America" d="M60,85 L80,90 L85,100 L75,110 L65,105 L55,95 Z"/>
+                                <!-- South America -->
+                                <path class="land" data-region="South America" d="M75,110 L95,105 L110,115 L115,140 L100,165 L80,170 L65,155 L60,130 L65,115 Z"/>
+                                <!-- Europe -->
+                                <path class="land" data-region="Europe" d="M160,25 L200,20 L210,35 L200,50 L180,55 L165,50 L155,40 Z"/>
+                                <!-- Africa -->
+                                <path class="land" data-region="Africa" d="M155,60 L200,55 L215,70 L220,100 L200,130 L170,140 L150,120 L145,90 L150,70 Z"/>
+                                <!-- Asia -->
+                                <path class="land" data-region="Asia" d="M200,15 L280,10 L330,25 L340,50 L320,70 L280,80 L250,75 L220,60 L210,35 Z"/>
+                                <!-- Middle East -->
+                                <path class="land" data-region="Middle East" d="M200,50 L230,45 L250,55 L245,70 L220,75 L200,65 Z"/>
+                                <!-- South Asia -->
+                                <path class="land" data-region="South Asia" d="M250,70 L280,65 L290,85 L275,100 L255,95 L245,80 Z"/>
+                                <!-- Southeast Asia -->
+                                <path class="land" data-region="Southeast Asia" d="M280,80 L310,75 L330,90 L320,110 L295,115 L280,100 Z"/>
+                                <!-- East Asia -->
+                                <path class="land" data-region="East Asia" d="M290,40 L330,35 L345,55 L335,70 L310,65 L295,55 Z"/>
+                                <!-- Australia -->
+                                <path class="land" data-region="Oceania" d="M290,120 L340,115 L355,135 L340,155 L305,160 L285,145 Z"/>
+                                <!-- New Zealand -->
+                                <path class="land" data-region="Oceania" d="M350,155 L358,150 L358,165 L352,168 Z"/>
+                            </g>
+                        </svg>
+                        <div id="map-marker" class="map-marker" style="display: none;"></div>
+                    </div>
+                    <div id="map-region-label" class="map-region-label"></div>
                 </div>
 
             </article>
@@ -1612,7 +1762,7 @@
             document.getElementById('progress-container').style.display = 'none';
 
             try {
-                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca3,population');
+                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca3,population,latlng,region,subregion');
 
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
@@ -1961,8 +2111,9 @@
             ratingArea.classList.remove('visible');
             showBtn.classList.remove('hidden');
 
-            // Hide hints from previous card
+            // Hide hints and map from previous card
             document.getElementById('hint-section').classList.remove('visible');
+            document.getElementById('map-section').classList.remove('visible');
 
             updateIntervalLabels();
             updateHUD();
@@ -1977,6 +2128,9 @@
 
             // Display memory hints
             displayHints(currentCard.cca3);
+
+            // Display map location
+            displayMapLocation(currentCard);
 
             // Focus first rating button for keyboard navigation
             document.querySelector('.rate-btn').focus();
@@ -2038,6 +2192,39 @@
 
             // Show the hint section with animation
             hintSection.classList.add('visible');
+        }
+
+        function displayMapLocation(country) {
+            const mapSection = document.getElementById('map-section');
+            const mapMarker = document.getElementById('map-marker');
+            const mapRegionLabel = document.getElementById('map-region-label');
+
+            if (!country.latlng || country.latlng.length < 2) {
+                mapSection.classList.remove('visible');
+                return;
+            }
+
+            const [lat, lng] = country.latlng;
+
+            // Convert lat/lng to SVG coordinates
+            // SVG viewBox is 360x180, where:
+            // - X (longitude): -180 to 180 maps to 0 to 360
+            // - Y (latitude): 90 to -90 maps to 0 to 180
+            const svgX = ((lng + 180) / 360) * 100; // As percentage
+            const svgY = ((90 - lat) / 180) * 100;  // As percentage
+
+            // Position the marker
+            mapMarker.style.left = `${svgX}%`;
+            mapMarker.style.top = `${svgY}%`;
+            mapMarker.style.display = 'block';
+
+            // Show region info
+            const region = country.region || 'Unknown';
+            const subregion = country.subregion || '';
+            mapRegionLabel.innerHTML = `<strong>${country.name.common}</strong> is located in ${subregion ? subregion + ', ' : ''}${region}`;
+
+            // Show the map section with animation
+            mapSection.classList.add('visible');
         }
 
         function rateCard(rating) {
