@@ -436,43 +436,25 @@
         }
 
         /* World Map Location Section */
-        .map-section {
+        .map-container {
+            position: relative;
             width: 100%;
             margin-top: 15px;
-            padding: 15px;
-            background: var(--bg);
-            border-radius: 12px;
-            text-align: left;
+            aspect-ratio: 2 / 1;
+            background: #a8d4f0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.3s ease, transform 0.3s ease;
             display: none;
         }
 
-        .map-section.visible {
+        .map-container.visible {
             display: block;
             opacity: 1;
             transform: translateY(0);
-        }
-
-        .map-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .map-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 2 / 1;
-            background: #a8d4f0;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
         }
 
         .world-map-img {
@@ -492,13 +474,13 @@
 
         .map-marker {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 10px;
+            height: 10px;
             background: #ef4444;
-            border: 3px solid #ffffff;
+            border: 1.5px solid #ffffff;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 0 3px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4), 0 0 0 1.5px rgba(239, 68, 68, 0.3);
             animation: pulse-marker 2s infinite;
             z-index: 10;
         }
@@ -508,8 +490,8 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 8px;
-            height: 8px;
+            width: 4px;
+            height: 4px;
             background: #ffffff;
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -520,8 +502,8 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             background: rgba(239, 68, 68, 0.25);
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -554,6 +536,11 @@
             font-size: 0.85rem;
             color: var(--text-muted);
             text-align: center;
+            display: none;
+        }
+
+        .map-region-label.visible {
+            display: block;
         }
 
         .map-region-label strong {
@@ -1058,20 +1045,15 @@
                 </div>
 
                 <!-- World Map Location Section -->
-                <div id="map-section" class="map-section">
-                    <div class="map-header">
-                        <span>🗺️</span> Location on World Map
-                    </div>
-                    <div class="map-container">
-                        <img 
-                            class="world-map-img" 
-                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/World_map_blank_without_borders.svg/1280px-World_map_blank_without_borders.svg.png" 
-                            alt="World map"
-                            loading="lazy"
-                        >
-                        <div id="map-marker" class="map-marker" style="display: none;"></div>
-                    </div>
-                    <div id="map-region-label" class="map-region-label"></div>
+                <div id="map-region-label" class="map-region-label"></div>
+                <div id="map-section" class="map-container">
+                    <img
+                        class="world-map-img"
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/World_map_blank_without_borders.svg/1280px-World_map_blank_without_borders.svg.png"
+                        alt="World map"
+                        loading="lazy"
+                    >
+                    <div id="map-marker" class="map-marker" style="display: none;"></div>
                 </div>
 
             </article>
@@ -2106,6 +2088,7 @@
             // Hide hints and map from previous card
             document.getElementById('hint-section').classList.remove('visible');
             document.getElementById('map-section').classList.remove('visible');
+            document.getElementById('map-region-label').classList.remove('visible');
 
             updateIntervalLabels();
             updateHUD();
@@ -2193,6 +2176,7 @@
 
             if (!country.latlng || country.latlng.length < 2) {
                 mapSection.classList.remove('visible');
+                mapRegionLabel.classList.remove('visible');
                 return;
             }
 
@@ -2217,6 +2201,7 @@
 
             // Show the map section with animation
             mapSection.classList.add('visible');
+            mapRegionLabel.classList.add('visible');
         }
 
         function rateCard(rating) {
