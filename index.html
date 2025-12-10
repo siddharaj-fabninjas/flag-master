@@ -167,7 +167,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -267,28 +267,32 @@
         /* Flag indicators row above the flag */
         .flag-indicators {
             width: 100%;
+            max-width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            padding: 0 4px;
+            box-sizing: border-box;
         }
 
         .flag-indicator-icon {
             font-size: 1.1rem;
+            line-height: 1;
         }
 
         .flag-indicator-dots {
             display: flex;
-            gap: 6px;
+            gap: 8px;
         }
 
         .flag-indicator-dots.hidden {
-            display: none;
+            visibility: hidden;
         }
 
         .flag-indicator-dots .dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: var(--border);
             transition: background-color 0.3s, transform 0.3s;
