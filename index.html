@@ -161,9 +161,9 @@
         .card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 30px 20px;
+            padding: 20px;
             box-shadow: 0 10px 15px -3px var(--shadow);
-            min-height: 280px;
+            min-height: 250px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -181,7 +181,7 @@
             width: 100%;
             aspect-ratio: 3 / 2;
             max-height: 200px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .flag-img {
@@ -228,17 +228,9 @@
         .difficulty-badge.tier-5 { background: #ef4444; }
         .difficulty-badge.tier-6 { background: #6b7280; }
 
-        /* Learning Progress Indicator */
+        /* Learning Progress Indicator - positioned in flag container */
         .learning-progress {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            padding: 8px 16px;
-            background: var(--bg);
-            border-radius: 20px;
-            font-size: 0.85rem;
+            display: none;
         }
 
         .learning-progress.hidden {
@@ -246,7 +238,7 @@
         }
 
         .learning-progress .label {
-            color: var(--text-muted);
+            display: none;
         }
 
         .learning-progress .dots {
@@ -255,8 +247,8 @@
         }
 
         .learning-progress .dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: var(--border);
             transition: background-color 0.3s, transform 0.3s;
@@ -272,25 +264,50 @@
             color: var(--primary);
         }
 
+        /* Flag container overlay indicators */
+        .flag-indicators {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .flag-indicator-icon {
+            font-size: 1.2rem;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+
+        .flag-indicator-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .flag-indicator-dots.hidden {
+            display: none;
+        }
+
+        .flag-indicator-dots .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(0,0,0,0.2);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .flag-indicator-dots .dot.filled {
+            background: #10b981;
+            border-color: #059669;
+            transform: scale(1.1);
+        }
+
         .card-state-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-
-        .card-state-badge.learning {
-            background: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-        }
-
-        .card-state-badge.review {
-            background: rgba(59, 130, 246, 0.15);
-            color: #3b82f6;
+            display: none;
         }
 
         .card-state-badge.hidden {
@@ -789,8 +806,8 @@
             }
 
             .card {
-                padding: 20px 15px;
-                min-height: 250px;
+                padding: 15px;
+                min-height: 220px;
             }
 
             .flag-container {
@@ -848,8 +865,16 @@
     <main class="game-container">
         <div id="game-area">
             <article id="card" class="card" role="region" aria-label="Flashcard">
-                <span id="card-state-badge" class="card-state-badge learning">Learning</span>
+                <span id="card-state-badge" class="card-state-badge learning" style="display:none;">Learning</span>
                 <div class="flag-container">
+                    <div class="flag-indicators">
+                        <span id="flag-indicator-icon" class="flag-indicator-icon">🎯</span>
+                        <div id="flag-indicator-dots" class="flag-indicator-dots">
+                            <span class="dot" id="indicator-dot-1"></span>
+                            <span class="dot" id="indicator-dot-2"></span>
+                            <span class="dot" id="indicator-dot-3"></span>
+                        </div>
+                    </div>
                     <div id="flag-placeholder" class="flag-placeholder">🏳️</div>
                     <img id="flag-img" class="flag-img" src="" alt="Country flag to identify">
                 </div>
@@ -1863,25 +1888,40 @@
             const cardStateBadge = document.getElementById('card-state-badge');
             const learningProgress = document.getElementById('learning-progress');
 
-            // Update card state badge
+            // Update card state badge and flag indicators
+            const flagIndicatorIcon = document.getElementById('flag-indicator-icon');
+            const flagIndicatorDots = document.getElementById('flag-indicator-dots');
+            
             if (cardData && cardData.state === CARD_STATE.GRADUATED) {
                 cardStateBadge.textContent = '📖 Review';
                 cardStateBadge.className = 'card-state-badge review';
                 learningProgress.classList.add('hidden');
+                flagIndicatorIcon.textContent = '📖';
+                flagIndicatorDots.classList.add('hidden');
             } else {
                 cardStateBadge.textContent = '🎯 Learning';
                 cardStateBadge.className = 'card-state-badge learning';
                 learningProgress.classList.remove('hidden');
+                flagIndicatorIcon.textContent = '🎯';
+                flagIndicatorDots.classList.remove('hidden');
 
-                // Update progress dots
+                // Update progress dots (both old and new)
                 const correctStreak = cardData ? cardData.correctStreak : 0;
                 for (let i = 1; i <= GRADUATION_THRESHOLD; i++) {
                     const dot = document.getElementById(`dot-${i}`);
+                    const indicatorDot = document.getElementById(`indicator-dot-${i}`);
                     if (dot) {
                         if (i <= correctStreak) {
                             dot.classList.add('filled');
                         } else {
                             dot.classList.remove('filled');
+                        }
+                    }
+                    if (indicatorDot) {
+                        if (i <= correctStreak) {
+                            indicatorDot.classList.add('filled');
+                        } else {
+                            indicatorDot.classList.remove('filled');
                         }
                     }
                 }
