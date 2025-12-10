@@ -161,7 +161,7 @@
         .card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 20px;
+            padding: 10px 20px 20px 20px;
             box-shadow: 0 10px 15px -3px var(--shadow);
             min-height: 250px;
             display: flex;
@@ -176,12 +176,16 @@
             box-shadow: 0 15px 20px -5px var(--shadow);
         }
 
-        .flag-container {
+        .flag-wrapper {
             position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .flag-container {
             width: 100%;
             aspect-ratio: 3 / 2;
             max-height: 200px;
-            margin-bottom: 10px;
         }
 
         .flag-img {
@@ -266,15 +270,11 @@
 
         /* Flag container overlay indicators */
         .flag-indicators {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 10;
-            pointer-events: none;
+            padding: 0;
+            margin-bottom: 8px;
         }
 
         .flag-indicator-icon {
@@ -866,7 +866,7 @@
         <div id="game-area">
             <article id="card" class="card" role="region" aria-label="Flashcard">
                 <span id="card-state-badge" class="card-state-badge learning" style="display:none;">Learning</span>
-                <div class="flag-container">
+                <div class="flag-wrapper">
                     <div class="flag-indicators">
                         <span id="flag-indicator-icon" class="flag-indicator-icon">🎯</span>
                         <div id="flag-indicator-dots" class="flag-indicator-dots">
@@ -875,8 +875,10 @@
                             <span class="dot" id="indicator-dot-3"></span>
                         </div>
                     </div>
-                    <div id="flag-placeholder" class="flag-placeholder">🏳️</div>
-                    <img id="flag-img" class="flag-img" src="" alt="Country flag to identify">
+                    <div class="flag-container">
+                        <div id="flag-placeholder" class="flag-placeholder">🏳️</div>
+                        <img id="flag-img" class="flag-img" src="" alt="Country flag to identify">
+                    </div>
                 </div>
                 <div id="learning-progress" class="learning-progress hidden">
                     <span class="label">Progress:</span>
@@ -1891,7 +1893,7 @@
             // Update card state badge and flag indicators
             const flagIndicatorIcon = document.getElementById('flag-indicator-icon');
             const flagIndicatorDots = document.getElementById('flag-indicator-dots');
-            
+
             if (cardData && cardData.state === CARD_STATE.GRADUATED) {
                 cardStateBadge.textContent = '📖 Review';
                 cardStateBadge.className = 'card-state-badge review';
