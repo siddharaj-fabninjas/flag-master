@@ -469,45 +469,50 @@
             position: relative;
             width: 100%;
             aspect-ratio: 2 / 1;
-            background: var(--card-bg);
+            background: #a8d4f0;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border);
         }
 
-        .world-map-svg {
+        .world-map-img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
         }
 
-        .world-map-svg .land {
-            fill: var(--border);
-            stroke: var(--bg);
-            stroke-width: 0.5;
-            transition: fill 0.3s ease;
+        [data-theme="dark"] .map-container {
+            background: #1e3a5f;
         }
 
-        .world-map-svg .land.highlighted {
-            fill: var(--primary);
-            stroke: var(--primary-hover);
-            stroke-width: 1;
-        }
-
-        .world-map-svg .ocean {
-            fill: var(--card-bg);
+        [data-theme="dark"] .world-map-img {
+            filter: brightness(0.7) saturate(0.8);
         }
 
         .map-marker {
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             background: #ef4444;
             border: 3px solid #ffffff;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 0 0 3px rgba(239, 68, 68, 0.3);
             animation: pulse-marker 2s infinite;
             z-index: 10;
+        }
+
+        .map-marker::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: #ffffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .map-marker::after {
@@ -515,12 +520,13 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 30px;
-            height: 30px;
-            background: rgba(239, 68, 68, 0.2);
+            width: 40px;
+            height: 40px;
+            background: rgba(239, 68, 68, 0.25);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             z-index: -1;
+            animation: pulse-ring 2s infinite;
         }
 
         @keyframes pulse-marker {
@@ -528,7 +534,18 @@
                 transform: translate(-50%, -50%) scale(1);
             }
             50% {
-                transform: translate(-50%, -50%) scale(1.1);
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
             }
         }
 
@@ -1046,37 +1063,12 @@
                         <span>🗺️</span> Location on World Map
                     </div>
                     <div class="map-container">
-                        <svg class="world-map-svg" viewBox="0 0 360 180" preserveAspectRatio="xMidYMid meet">
-                            <!-- Ocean background -->
-                            <rect class="ocean" x="0" y="0" width="360" height="180"/>
-                            <!-- Simplified world map paths -->
-                            <g class="continents">
-                                <!-- North America -->
-                                <path class="land" data-region="North America" d="M10,20 L60,15 L90,20 L120,35 L130,50 L125,70 L100,75 L80,90 L60,85 L40,70 L20,55 L10,40 Z"/>
-                                <!-- Central America & Caribbean -->
-                                <path class="land" data-region="Central America" d="M60,85 L80,90 L85,100 L75,110 L65,105 L55,95 Z"/>
-                                <!-- South America -->
-                                <path class="land" data-region="South America" d="M75,110 L95,105 L110,115 L115,140 L100,165 L80,170 L65,155 L60,130 L65,115 Z"/>
-                                <!-- Europe -->
-                                <path class="land" data-region="Europe" d="M160,25 L200,20 L210,35 L200,50 L180,55 L165,50 L155,40 Z"/>
-                                <!-- Africa -->
-                                <path class="land" data-region="Africa" d="M155,60 L200,55 L215,70 L220,100 L200,130 L170,140 L150,120 L145,90 L150,70 Z"/>
-                                <!-- Asia -->
-                                <path class="land" data-region="Asia" d="M200,15 L280,10 L330,25 L340,50 L320,70 L280,80 L250,75 L220,60 L210,35 Z"/>
-                                <!-- Middle East -->
-                                <path class="land" data-region="Middle East" d="M200,50 L230,45 L250,55 L245,70 L220,75 L200,65 Z"/>
-                                <!-- South Asia -->
-                                <path class="land" data-region="South Asia" d="M250,70 L280,65 L290,85 L275,100 L255,95 L245,80 Z"/>
-                                <!-- Southeast Asia -->
-                                <path class="land" data-region="Southeast Asia" d="M280,80 L310,75 L330,90 L320,110 L295,115 L280,100 Z"/>
-                                <!-- East Asia -->
-                                <path class="land" data-region="East Asia" d="M290,40 L330,35 L345,55 L335,70 L310,65 L295,55 Z"/>
-                                <!-- Australia -->
-                                <path class="land" data-region="Oceania" d="M290,120 L340,115 L355,135 L340,155 L305,160 L285,145 Z"/>
-                                <!-- New Zealand -->
-                                <path class="land" data-region="Oceania" d="M350,155 L358,150 L358,165 L352,168 Z"/>
-                            </g>
-                        </svg>
+                        <img 
+                            class="world-map-img" 
+                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/World_map_blank_without_borders.svg/1280px-World_map_blank_without_borders.svg.png" 
+                            alt="World map"
+                            loading="lazy"
+                        >
                         <div id="map-marker" class="map-marker" style="display: none;"></div>
                     </div>
                     <div id="map-region-label" class="map-region-label"></div>
