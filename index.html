@@ -460,7 +460,7 @@
         .world-map-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: fill;
             opacity: 0.9;
         }
 
@@ -1049,7 +1049,7 @@
                 <div id="map-section" class="map-container">
                     <img
                         class="world-map-img"
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/World_map_blank_without_borders.svg/1280px-World_map_blank_without_borders.svg.png"
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/1280px-Equirectangular_projection_SW.jpg"
                         alt="World map"
                         loading="lazy"
                     >
@@ -2182,16 +2182,16 @@
 
             const [lat, lng] = country.latlng;
 
-            // Convert lat/lng to SVG coordinates
-            // SVG viewBox is 360x180, where:
-            // - X (longitude): -180 to 180 maps to 0 to 360
-            // - Y (latitude): 90 to -90 maps to 0 to 180
-            const svgX = ((lng + 180) / 360) * 100; // As percentage
-            const svgY = ((90 - lat) / 180) * 100;  // As percentage
+            // Convert lat/lng to percentage coordinates for equirectangular projection
+            // Equirectangular projection maps:
+            // - Longitude: -180° to +180° maps to 0% to 100% (left to right)
+            // - Latitude: +90° to -90° maps to 0% to 100% (top to bottom)
+            const xPercent = ((lng + 180) / 360) * 100;
+            const yPercent = ((90 - lat) / 180) * 100;
 
-            // Position the marker
-            mapMarker.style.left = `${svgX}%`;
-            mapMarker.style.top = `${svgY}%`;
+            // Position the marker (transform: translate(-50%, -50%) centers it)
+            mapMarker.style.left = `${xPercent}%`;
+            mapMarker.style.top = `${yPercent}%`;
             mapMarker.style.display = 'block';
 
             // Show region info
