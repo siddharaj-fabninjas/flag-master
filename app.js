@@ -3,6 +3,7 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
 
         // --- 1. GAME STATE & DATA ---
         let flagsDB = [];
+        let flagsByCode = new Map();
         let studyQueue = [];
         let currentCard = null;
         let sessionTotal = 0;
@@ -140,12 +141,22 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             return filtered;
         }
 
+        function setFlagDataset(flagData) {
+            flagsDB = flagData;
+            flagsByCode = new Map();
+            flagData.forEach(flag => {
+                if (flag && flag.cca3) {
+                    flagsByCode.set(flag.cca3, flag);
+                }
+            });
+        }
+
         function applyFlagDataset(flagData) {
             if (!Array.isArray(flagData) || flagData.length === 0) {
                 throw new Error('Flag dataset is empty');
             }
 
-            flagsDB = flagData;
+            setFlagDataset(flagData);
             prepareSession();
         }
 
@@ -153,7 +164,7 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             fetchFlagDataset()
                 .then(freshFlags => {
                     saveFlagsCache(freshFlags);
-                    flagsDB = freshFlags;
+                    setFlagDataset(freshFlags);
                 })
                 .catch(error => {
                     console.warn('Background flag refresh failed:', error);
@@ -175,7 +186,7 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             if (!hint || !hint.similar || hint.similar.length === 0) return [];
 
             return hint.similar.map(similarCode => {
-                const similarCountry = flagsDB.find(f => f.cca3 === similarCode);
+                const similarCountry = flagsByCode.get(similarCode);
                 if (!similarCountry) return null;
 
                 // Find the tip for this pair
