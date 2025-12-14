@@ -8,7 +8,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
+    <header class="header" role="banner">
         <div class="header-left">
             <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark mode" title="Toggle theme (T)">🌙</button>
         </div>
@@ -28,7 +28,7 @@
 
     <!-- Progress Bar -->
     <div class="progress-container" id="progress-container">
-        <div class="progress-text">
+        <div class="progress-text" aria-live="polite">
             <span id="progress-label">Cards in Queue</span>
             <span id="progress-count">0</span>
         </div>
@@ -38,13 +38,13 @@
     </div>
 
     <!-- Game Area -->
-    <main class="game-container">
+    <main class="game-container" role="main">
         <div id="game-area">
             <article id="card" class="card" role="region" aria-label="Flashcard">
-                <span id="card-state-badge" class="card-state-badge learning" style="display:none;">Learning</span>
+                <span id="card-state-badge" class="card-state-badge learning" style="display:none;" role="status" aria-live="polite">Learning</span>
                 <div class="flag-wrapper">
                     <div class="flag-indicators">
-                        <span id="flag-indicator-icon" class="flag-indicator-icon">🎯</span>
+                        <span id="flag-indicator-icon" class="flag-indicator-icon" aria-hidden="true">🎯</span>
                         <div id="flag-indicator-dots" class="flag-indicator-dots">
                             <span class="dot" id="indicator-dot-1"></span>
                             <span class="dot" id="indicator-dot-2"></span>
@@ -64,7 +64,7 @@
                         <span class="dot" id="dot-3"></span>
                     </div>
                 </div>
-                <span id="difficulty-badge" class="difficulty-badge tier-1">Easy</span>
+                <span id="difficulty-badge" class="difficulty-badge tier-1" role="status" aria-live="polite">Easy</span>
                 <h2 id="country-name" class="country-name" aria-live="polite">Country Name</h2>
 
                 <button id="show-btn" class="show-answer-btn" aria-describedby="keyboard-hint">
@@ -95,7 +95,7 @@
                 </p>
 
                 <!-- Memory Hint Section -->
-                <div id="hint-section" class="hint-section">
+                <div id="hint-section" class="hint-section" role="complementary" aria-label="Memory hints">
                     <div class="hint-header">
                         <span>💡</span> Memory Tip
                     </div>
@@ -113,15 +113,15 @@
                 </div>
 
                 <!-- World Map Location Section -->
-                <div id="map-region-label" class="map-region-label"></div>
-                <div id="map-section" class="map-container">
+                <div id="map-region-label" class="map-region-label" role="status" aria-live="polite"></div>
+                <div id="map-section" class="map-container" role="region" aria-label="World map location">
                     <img
                         class="world-map-img"
                         src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/1280px-Equirectangular_projection_SW.jpg"
                         alt="World map"
                         loading="lazy"
                     >
-                    <div id="map-marker" class="map-marker" style="display: none;"></div>
+                    <div id="map-marker" class="map-marker" style="display: none;" aria-hidden="true"></div>
                 </div>
 
             </article>

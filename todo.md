@@ -8,4 +8,4 @@
 
 - [x] **Optimize lookups**: Build a `Map` keyed by `cca3` after fetching so utilities like `getSimilarFlags` can perform O(1) retrievals instead of repeated `Array.find` scans.
 
-- [ ] **Improve accessibility**: Add `aria-label`s to icon buttons, ensure status text has `aria-live`, manage focus only when controls are visible, and introduce landmark roles to make the trainer screen-reader and keyboard friendly.
+- [x] **Improve accessibility**: Add `aria-label`s to icon buttons, ensure status text has `aria-live`, manage focus only when controls are visible, and introduce landmark roles to make the trainer screen-reader and keyboard friendly.

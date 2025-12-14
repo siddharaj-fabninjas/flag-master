@@ -8,6 +8,7 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
         let currentCard = null;
         let sessionTotal = 0;
         let sessionCompleted = 0;
+        let lastFocusedElement = null;
 
         const DEFAULT_PROGRESS = {
             xp: 0,
@@ -600,7 +601,8 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             const countryName = document.getElementById('country-name');
             countryName.textContent = currentCard.name.common;
             countryName.classList.add('visible');
-            document.getElementById('rating-area').classList.add('visible');
+            const ratingArea = document.getElementById('rating-area');
+            ratingArea.classList.add('visible');
             document.getElementById('show-btn').classList.add('hidden');
 
             // Display memory hints
@@ -610,7 +612,12 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             displayMapLocation(currentCard);
 
             // Focus first rating button for keyboard navigation
-            document.querySelector('.rate-btn').focus();
+            if (ratingArea.classList.contains('visible')) {
+                const firstRatingBtn = ratingArea.querySelector('.rate-btn');
+                if (firstRatingBtn) {
+                    firstRatingBtn.focus();
+                }
+            }
         }
 
         function displayHints(cca3) {
@@ -1046,6 +1053,7 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
 
         function openModal() {
             const modal = document.getElementById('settings-modal');
+            lastFocusedElement = document.activeElement;
             modal.classList.add('visible');
 
             // Update stats
@@ -1067,6 +1075,16 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             const statusEl = document.getElementById('import-status');
             statusEl.className = 'import-status';
             statusEl.textContent = '';
+
+            if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                lastFocusedElement.focus();
+                lastFocusedElement = null;
+            } else {
+                const settingsBtn = document.getElementById('settings-btn');
+                if (settingsBtn) {
+                    settingsBtn.focus();
+                }
+            }
         }
 
         function saveSessionLimit() {
