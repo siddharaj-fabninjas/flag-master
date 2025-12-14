@@ -2,7 +2,7 @@
 
 - [x] **Modularize assets**: Move CSS and JavaScript into dedicated files (and ideally ES modules) so markup stays readable, the browser can cache/minify assets, and future maintenance is easier.
 
-- [ ] **Externalize datasets**: Shift large static tables (`FLAG_HINTS`, `SIMILAR_FLAGS_INFO`) into JSON/data modules that can be reused or updated without editing UI logic; consider lazy-loading to keep initial payload small.
+- [x] **Externalize datasets**: Shift large static tables (`FLAG_HINTS`, `SIMILAR_FLAGS_INFO`) into JSON/data modules that can be reused or updated without editing UI logic; consider lazy-loading to keep initial payload small.
 
 - [ ] **Cache REST Countries payload**: Persist the fetched `flagsDB` (with a freshness timestamp) in localStorage/IndexedDB so the app loads instantly, works offline for a while, and avoids API-rate issues.
 
