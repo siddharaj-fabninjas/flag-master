@@ -18,6 +18,10 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
 
         let userProgress = { ...DEFAULT_PROGRESS };
 
+        const FLAG_CACHE_KEY = 'flagMasterFlagsCache';
+        const FLAG_CACHE_VERSION = 1;
+        const FLAG_CACHE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 days
+
         // --- LEARNING PHASE CONSTANTS ---
         // Cards must be answered correctly this many times before graduating to SRS
         const GRADUATION_THRESHOLD = 3;
@@ -88,6 +92,74 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             return sorted;
         }
 
+        function getFlagsCacheEntry() {
+            try {
+                const raw = localStorage.getItem(FLAG_CACHE_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (parsed.version !== FLAG_CACHE_VERSION || !Array.isArray(parsed.flags)) {
+                    return null;
+                }
+                return parsed;
+            } catch (error) {
+                console.warn('Failed to parse flag cache:', error);
+                return null;
+            }
+        }
+
+        function isCacheEntryFresh(entry) {
+            if (!entry || typeof entry.cachedAt !== 'number') return false;
+            return (Date.now() - entry.cachedAt) <= FLAG_CACHE_TTL;
+        }
+
+        function saveFlagsCache(flags) {
+            try {
+                localStorage.setItem(FLAG_CACHE_KEY, JSON.stringify({
+                    version: FLAG_CACHE_VERSION,
+                    cachedAt: Date.now(),
+                    flags
+                }));
+            } catch (error) {
+                console.warn('Failed to save flag cache:', error);
+            }
+        }
+
+        async function fetchFlagDataset() {
+            const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca3,population,latlng,region,subregion');
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
+            const data = await res.json();
+            const filtered = data.filter(d => d.cca3 && d.flags && d.flags.svg && d.name && d.name.common);
+
+            if (filtered.length === 0) {
+                throw new Error('No valid flag data received');
+            }
+
+            return filtered;
+        }
+
+        function applyFlagDataset(flagData) {
+            if (!Array.isArray(flagData) || flagData.length === 0) {
+                throw new Error('Flag dataset is empty');
+            }
+
+            flagsDB = flagData;
+            prepareSession();
+        }
+
+        function refreshFlagsInBackground() {
+            fetchFlagDataset()
+                .then(freshFlags => {
+                    saveFlagsCache(freshFlags);
+                    flagsDB = freshFlags;
+                })
+                .catch(error => {
+                    console.warn('Background flag refresh failed:', error);
+                });
+        }
+
         // --- 3. FLAG HINTS & MNEMONICS DATABASE ---
         
 
@@ -151,32 +223,35 @@ import SIMILAR_FLAGS_INFO from './data/similar-flags.js';
             document.getElementById('game-area').style.display = 'none';
             document.getElementById('progress-container').style.display = 'none';
 
+            const cacheEntry = getFlagsCacheEntry();
+            const hasFreshCache = isCacheEntryFresh(cacheEntry);
+
+            if (hasFreshCache) {
+                try {
+                    applyFlagDataset(cacheEntry.flags);
+                    refreshFlagsInBackground();
+                    return;
+                } catch (error) {
+                    console.warn('Cached flag data invalid, refetching...', error);
+                }
+            }
+
             try {
-                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca3,population,latlng,region,subregion');
-
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-
-                const data = await res.json();
-
-                // Filter valid entries
-                flagsDB = data
-                    .filter(d => d.cca3 && d.flags && d.flags.svg && d.name && d.name.common);
-
-                if (flagsDB.length === 0) {
-                    throw new Error('No valid flag data received');
-                }
-
-                prepareSession();
+                const freshFlags = await fetchFlagDataset();
+                saveFlagsCache(freshFlags);
+                applyFlagDataset(freshFlags);
             } catch (error) {
                 console.error('Failed to load flags:', error);
-                messageArea.innerHTML = `
-                    <div style="font-size: 2rem; margin-bottom: 10px;">😕</div>
-                    <strong>Error loading data</strong><br>
-                    <span style="font-size: 0.9rem;">${error.message}</span><br><br>
-                    <button onclick="location.reload()" class="show-answer-btn">Try Again</button>
-                `;
+                if (cacheEntry && Array.isArray(cacheEntry.flags) && cacheEntry.flags.length > 0) {
+                    applyFlagDataset(cacheEntry.flags);
+                } else {
+                    messageArea.innerHTML = `
+                        <div style="font-size: 2rem; margin-bottom: 10px;">😕</div>
+                        <strong>Error loading data</strong><br>
+                        <span style="font-size: 0.9rem;">${error.message}</span><br><br>
+                        <button onclick="location.reload()" class="show-answer-btn">Try Again</button>
+                    `;
+                }
             }
         }
 
